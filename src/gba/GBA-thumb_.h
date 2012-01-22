@@ -809,175 +809,209 @@ static  void thumb47(u32 opcode)
 // LDR R0~R7,[PC, #Imm]
 static  void thumb48(u32 opcode)
 {
-  u8 regist = (opcode >> 8) & 7;
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = (reg[15].I & 0xFFFFFFFC) + ((opcode & 0xFF) << 2);
-  reg[regist].I = CPUReadMemoryQuick(address);
-  busPrefetchCount=0;
-  clockTicks = 3 + dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16);
+	u8 regist = (opcode >> 8) & 7;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = (reg[15].I & 0xFFFFFFFC) + ((opcode & 0xFF) << 2);
+	reg[regist].I = CPUReadMemoryQuick(address);
+	busPrefetchCount=0;
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // STR Rd, [Rs, Rn]
 static  void thumb50(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  CPUWriteMemory(address, reg[opcode & 7].I);
-  clockTicks = dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	CPUWriteMemory(address, reg[opcode & 7].I);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // STRH Rd, [Rs, Rn]
 static  void thumb52(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  CPUWriteHalfWord(address, reg[opcode&7].W.W0);
-  clockTicks = dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	CPUWriteHalfWord(address, reg[opcode&7].W.W0);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // STRB Rd, [Rs, Rn]
 static  void thumb54(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode >>6)&7].I;
-  CPUWriteByte(address, reg[opcode & 7].B.B0);
-  clockTicks = dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode >>6)&7].I;
+	CPUWriteByte(address, reg[opcode & 7].B.B0);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // LDSB Rd, [Rs, Rn]
 static  void thumb56(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  reg[opcode&7].I = (s8)CPUReadByte(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	reg[opcode&7].I = (s8)CPUReadByte(address);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // LDR Rd, [Rs, Rn]
 static  void thumb58(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  reg[opcode&7].I = CPUReadMemory(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	reg[opcode&7].I = CPUReadMemory(address);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // LDRH Rd, [Rs, Rn]
 static  void thumb5A(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  reg[opcode&7].I = CPUReadHalfWord(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	reg[opcode&7].I = CPUReadHalfWord(address);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // LDRB Rd, [Rs, Rn]
 static  void thumb5C(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  reg[opcode&7].I = CPUReadByte(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	reg[opcode&7].I = CPUReadByte(address);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // LDSH Rd, [Rs, Rn]
 static  void thumb5E(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
-  reg[opcode&7].I = (s16)CPUReadHalfWordSigned(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + reg[(opcode>>6)&7].I;
+	reg[opcode&7].I = (s16)CPUReadHalfWordSigned(address);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // STR Rd, [Rs, #Imm]
 static  void thumb60(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<2);
-  CPUWriteMemory(address, reg[opcode&7].I);
-  clockTicks = dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<2);
+	CPUWriteMemory(address, reg[opcode&7].I);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // LDR Rd, [Rs, #Imm]
 static  void thumb68(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<2);
-  reg[opcode&7].I = CPUReadMemory(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<2);
+	reg[opcode&7].I = CPUReadMemory(address);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // STRB Rd, [Rs, #Imm]
 static  void thumb70(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31));
-  CPUWriteByte(address, reg[opcode&7].B.B0);
-  clockTicks = dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31));
+	CPUWriteByte(address, reg[opcode&7].B.B0);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // LDRB Rd, [Rs, #Imm]
 static  void thumb78(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31));
-  reg[opcode&7].I = CPUReadByte(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31));
+	reg[opcode&7].I = CPUReadByte(address);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // STRH Rd, [Rs, #Imm]
 static  void thumb80(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<1);
-  CPUWriteHalfWord(address, reg[opcode&7].W.W0);
-  clockTicks = dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<1);
+	CPUWriteHalfWord(address, reg[opcode&7].W.W0);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // LDRH Rd, [Rs, #Imm]
 static  void thumb88(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<1);
-  reg[opcode&7].I = CPUReadHalfWord(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_16) + codeTicksAccess(armNextPC, BITS_16);
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[(opcode>>3)&7].I + (((opcode>>6)&31)<<1);
+	reg[opcode&7].I = CPUReadHalfWord(address);
+	int dataticks_value = DATATICKS_ACCESS_16BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // STR R0~R7, [SP, #Imm]
 static  void thumb90(u32 opcode)
 {
-  u8 regist = (opcode >> 8) & 7;
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[13].I + ((opcode&255)<<2);
-  CPUWriteMemory(address, reg[regist].I);
-  clockTicks = dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16) + 2;
+	u8 regist = (opcode >> 8) & 7;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[13].I + ((opcode&255)<<2);
+	CPUWriteMemory(address, reg[regist].I);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = dataticks_value + codeTicksAccess(armNextPC, BITS_16) + 2;
 }
 
 // LDR R0~R7, [SP, #Imm]
 static  void thumb98(u32 opcode)
 {
-  u8 regist = (opcode >> 8) & 7;
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  u32 address = reg[13].I + ((opcode&255)<<2);
-  reg[regist].I = CPUReadMemoryQuick(address);
-  clockTicks = 3 + dataTicksAccess(address, BITS_32) + codeTicksAccess(armNextPC, BITS_16);
+	u8 regist = (opcode >> 8) & 7;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	u32 address = reg[13].I + ((opcode&255)<<2);
+	reg[regist].I = CPUReadMemoryQuick(address);
+	int dataticks_value = DATATICKS_ACCESS_32BIT(address);
+	DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+	clockTicks = 3 + dataticks_value + codeTicksAccess(armNextPC, BITS_16);
 }
 
 // PC/stack-related ///////////////////////////////////////////////////////
@@ -1010,11 +1044,9 @@ static  void thumbB0(u32 opcode)
 #define PUSH_REG(val, r)                                    \
   if (opcode & (val)) {                                     \
     CPUWriteMemory(address, reg[(r)].I);                    \
-    if (!count) {                                           \
-        clockTicks += 1 + dataTicksAccess(address, BITS_32);       \
-    } else {                                                \
-        clockTicks += 1 + dataTicksAccessSeq(address, BITS_32);    \
-    }                                                       \
+    int dataticks_value = count ? DATATICKS_ACCESS_32BIT_SEQ(address) : DATATICKS_ACCESS_32BIT(address); \
+    DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value); \
+    clockTicks += 1 + dataticks_value;				\
     count++;                                                \
     address += 4;                                           \
   }
@@ -1022,11 +1054,9 @@ static  void thumbB0(u32 opcode)
 #define POP_REG(val, r)                                     \
   if (opcode & (val)) {                                     \
     reg[(r)].I = CPUReadMemory(address);                    \
-    if (!count) {                                           \
-        clockTicks += 1 + dataTicksAccess(address, BITS_32);       \
-    } else {                                                \
-        clockTicks += 1 + dataTicksAccessSeq(address, BITS_32);    \
-    }                                                       \
+    int dataticks_value = count ? DATATICKS_ACCESS_32BIT_SEQ(address) : DATATICKS_ACCESS_32BIT(address); \
+    DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value); \
+    clockTicks += 1 + dataticks_value;				\
     count++;                                                \
     address += 4;                                           \
   }
@@ -1034,21 +1064,21 @@ static  void thumbB0(u32 opcode)
 // PUSH {Rlist}
 static  void thumbB4(u32 opcode)
 {
-  if (busPrefetchCount == 0)
-    busPrefetch = busPrefetchEnable;
-  int count = 0;
-  u32 temp = reg[13].I - 4 * cpuBitsSet[opcode & 0xff];
-  u32 address = temp & 0xFFFFFFFC;
-  PUSH_REG(1, 0);
-  PUSH_REG(2, 1);
-  PUSH_REG(4, 2);
-  PUSH_REG(8, 3);
-  PUSH_REG(16, 4);
-  PUSH_REG(32, 5);
-  PUSH_REG(64, 6);
-  PUSH_REG(128, 7);
-  clockTicks += 1 + codeTicksAccess(armNextPC, BITS_16);
-  reg[13].I = temp;
+	if (busPrefetchCount == 0)
+		busPrefetch = busPrefetchEnable;
+	int count = 0;
+	u32 temp = reg[13].I - 4 * cpuBitsSet[opcode & 0xff];
+	u32 address = temp & 0xFFFFFFFC;
+	PUSH_REG(1, 0);
+	PUSH_REG(2, 1);
+	PUSH_REG(4, 2);
+	PUSH_REG(8, 3);
+	PUSH_REG(16, 4);
+	PUSH_REG(32, 5);
+	PUSH_REG(64, 6);
+	PUSH_REG(128, 7);
+	clockTicks += 1 + codeTicksAccess(armNextPC, BITS_16);
+	reg[13].I = temp;
 }
 
 // PUSH {Rlist, LR}
@@ -1109,11 +1139,9 @@ static  void thumbBD(u32 opcode)
   POP_REG(64, 6);
   POP_REG(128, 7);
   reg[15].I = (CPUReadMemory(address) & 0xFFFFFFFE);
-  if (!count) {
-    clockTicks += 1 + dataTicksAccess(address, BITS_32);
-  } else {
-    clockTicks += 1 + dataTicksAccessSeq(address, BITS_32);
-  }
+  int dataticks_value = count ? DATATICKS_ACCESS_32BIT_SEQ(address) : DATATICKS_ACCESS_32BIT(address);
+  DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value);
+  clockTicks += 1 + dataticks_value;
   count++;
   armNextPC = reg[15].I;
   reg[15].I += 2;
@@ -1129,11 +1157,9 @@ static  void thumbBD(u32 opcode)
   if(opcode & (val)) {                                      \
     CPUWriteMemory(address, reg[(r)].I);                    \
     reg[(b)].I = temp;                                      \
-    if (!count) {                                           \
-        clockTicks += 1 + dataTicksAccess(address, BITS_32);       \
-    } else {                                                \
-        clockTicks += 1 + dataTicksAccessSeq(address, BITS_32);    \
-    }                                                       \
+    int dataticks_value = count ? DATATICKS_ACCESS_32BIT_SEQ(address) : DATATICKS_ACCESS_32BIT(address); \
+    DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value); \
+    clockTicks += 1 + dataticks_value; \
     count++;                                                \
     address += 4;                                           \
   }
@@ -1141,11 +1167,9 @@ static  void thumbBD(u32 opcode)
 #define THUMB_LDM_REG(val,r)                                \
   if(opcode & (val)) {                                      \
     reg[(r)].I = CPUReadMemory(address);                    \
-    if (!count) {                                           \
-        clockTicks += 1 + dataTicksAccess(address, BITS_32);       \
-    } else {                                                \
-        clockTicks += 1 + dataTicksAccessSeq(address, BITS_32);    \
-    }                                                       \
+    int dataticks_value = count ? DATATICKS_ACCESS_32BIT_SEQ(address) : DATATICKS_ACCESS_32BIT(address); \
+    DATATICKS_ACCESS_BUS_PREFETCH(address, dataticks_value); \
+    clockTicks += 1 + dataticks_value; \
     count++;                                                \
     address += 4;                                           \
   }

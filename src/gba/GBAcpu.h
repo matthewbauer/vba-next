@@ -41,59 +41,29 @@ extern void CPUUpdateFlags();
 extern void CPUSoftwareInterrupt();
 extern void CPUSoftwareInterrupt(int comment);
 
+#define DATATICKS_ACCESS_BUS_PREFETCH(address, value) \
+	int addr = (address >> 24) & 15; \
+	if ((addr>=0x08) || (addr < 0x02)) \
+	{ \
+		busPrefetchCount=0; \
+		busPrefetch=false; \
+	} \
+	else if (busPrefetch) \
+	{ \
+		int waitState = value; \
+		waitState = (1 & ~waitState) | (waitState & waitState); \
+		busPrefetchCount = ((busPrefetchCount+1)<<waitState) - 1; \ 
+	}
 
 // Waitstates when accessing data
-INLINE int dataTicksAccess(u32 address, u8 bit32) // DATA 8/16bits NON SEQ
-{
-	int addr, value, waitState;
-
-	addr = (address>>24)&15;
-
-	if(bit32)	/* DATA 32bits NON SEQ */
-		value = memoryWait32[addr];
-	else		/* DATA 8/16bits NON SEQ */
-		value =  memoryWait[addr];
-
-	if ((addr>=0x08) || (addr < 0x02))
-	{
-		busPrefetchCount=0;
-		busPrefetch=false;
-	}
-	else if (busPrefetch)
-	{
-		waitState = value;
-		waitState = (1 & ~waitState) | (waitState & waitState);
-		busPrefetchCount = ((busPrefetchCount+1)<<waitState) - 1; 
-	}
-
-	return value;
-}
-
-INLINE int dataTicksAccessSeq(u32 address, u8 bit32)// DATA 8/16bits SEQ
-{
-	int addr, value, waitState;
-
-	addr = (address>>24)&15;
-
-	if (bit32)		/* DATA 32bits SEQ */
-		value = memoryWaitSeq32[addr];
-	else			/* DATA 8/16bits SEQ */
-		value = memoryWaitSeq[addr];
-
-	if ((addr>=0x08) || (addr < 0x02))
-	{
-		busPrefetchCount=0;
-		busPrefetch=false;
-	}
-	else if (busPrefetch)
-	{
-		waitState = value;
-		waitState = (1 & ~waitState) | (waitState & waitState);
-		busPrefetchCount = ((busPrefetchCount+1)<<waitState) - 1;
-	}
-
-	return value;
-}
+/* DATA 32bits NON SEQ */
+#define DATATICKS_ACCESS_32BIT(address)	(memoryWait32[(address >> 24) & 15])
+/* DATA 32bits SEQ */
+#define DATATICKS_ACCESS_32BIT_SEQ(address) (memoryWaitSeq32[(address >> 24) & 15])
+/* DATA 8/16bits NON SEQ */
+#define DATATICKS_ACCESS_16BIT(address) (memoryWait[(address >> 24) & 15])
+/* DATA 8/16bits SEQ */
+#define DATATICKS_ACCESS_16BIT_SEQ(address) (memoryWaitSeq[(address >> 24) & 15])
 
 // Waitstates when executing opcode
 static INLINE int codeTicksAccess(u32 address, u8 bit32) // THUMB NON SEQ
